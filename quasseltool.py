@@ -412,7 +412,7 @@ class Logutil:
         """
         if not time:
             time = '01-Jan-1901 00:00:00'
-        if limit == all
+        if limit == all:
             limit1 = 0
         else:
             limit = limit1
