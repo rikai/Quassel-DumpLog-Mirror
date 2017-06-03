@@ -4,7 +4,7 @@ This is a simple mirror of http://pastebin.com/rxcK6BmV
 
 These scripts were originally written by their respective authors and postgresql support was added by TecknoJock
 
-####Note: These scripts ONLY support PostgreSQL, for sqlite support, use [this script](http://bugs.quassel-irc.org/projects/quassel-irc/wiki/Quassel_Logging#dumplog) instead
+#### Note: These scripts ONLY support PostgreSQL, for sqlite support, use [this script](http://bugs.quassel-irc.org/projects/quassel-irc/wiki/Quassel_Logging#dumplog) instead
 
 * **quasseltool.py** - This is the core database handling module, required for both versions of dump log.
 Def cursor needs to be updated with your credentials for the postgresql quassel db in order to use.
