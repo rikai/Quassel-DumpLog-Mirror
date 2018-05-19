@@ -34,6 +34,7 @@ import os.path
 import quasseltool
 import codecs
 import sys
+import re
  
 class Consolecounter:
     def __init__(self, head=None, tail=None):
@@ -72,6 +73,37 @@ class Consolecounter:
                     sys.stdout.write(self.tail)
                     sys.stdout.flush()
  
+def last_line(in_file, block_size=1024, ignore_ending_newline=True):
+    suffix = ""
+    in_file.seek(0, os.SEEK_END)
+    in_file_length = in_file.tell()
+    seek_offset = 0
+
+    while(-seek_offset < in_file_length):
+        # Read from end.
+        seek_offset -= block_size
+        if -seek_offset > in_file_length:
+            # Limit if we ran out of file (can't seek backward from start).
+            block_size -= -seek_offset - in_file_length
+            if block_size == 0:
+                break
+            seek_offset = -in_file_length
+        in_file.seek(seek_offset, os.SEEK_END)
+        buf = in_file.read(block_size)
+
+        # Search for line end.
+        if ignore_ending_newline and seek_offset == -block_size and buf[-1] == '\n':
+            buf = buf[:-1]
+        pos = buf.rfind('\n')
+        if pos != -1:
+            # Found line end.
+            return buf[pos+1:] + suffix
+
+        suffix = buf + suffix
+
+    # One-line file.
+    return suffix
+
 class App():
     def __init__(self):
         self._init_opts()
@@ -88,14 +120,10 @@ class App():
    
     def _run(self):
         try:
-            self.log = quasseltool.Logutil(self.opts.db)
-        except sqlite3.OperationalError:
-            if self.opts.db == "":
-                dbname = "(defaults)"
-            else:
-                dbname = self.opts.db
-            print "FATAL: Unable to open db file %s"%os.path.expanduser(dbname)
-            print "if it is somewhere else, use the -d FILE option"
+            self.log = quasseltool.Logutil()
+        except:
+            print "FATAL: Unable to connect to db"
+            print "you need to edit the connection infos in quasseltool.py"
             sys.exit(1)
         if self.opts.user == "":
             print "No user specified. Available options are:"
@@ -133,6 +161,10 @@ class App():
         else:
             exists = False
         outfile = codecs.open(filename, "a+", "iso8859_15", errors="replace")
+
+	time=False
+	limit="all"
+
         if exists:
             #read time and date on last line of file so that the entire buffer wont have to be dumped again and can instead just be appended.
             lastline = unicode(last_line(outfile))
@@ -148,22 +180,3 @@ class App():
  
 if __name__ == "__main__":
     App()
-
-
-    if os.path.isfile(filename):
-        exists = True
-    else:
-        exists = False
-    outfile = codecs.open(filename, "a+", "iso8859_15", errors="replace")
-    if exists:
-        #read time and date on last line of file so that the entire buffer wont have to be dumped again and can instead just be appended.
-        lastline = unicode(last_line(outfile))
-        time= re.search("\A\[\d{2}-\w{3}-\d{4} \d{2}:\d{2}:\d{2}\]",lastline)
-        if time:
-            time = time.group(0)[1:-1]+u".999"
-    #outfile = codecs.open(filename, "wb", "utf-8")
-    sys.stdout.write("Writing Logfile %s of channel %s on network %s for user %s... "%(filename, self.opts.channel, self.opts.network, self.opts.user))
-    sys.stdout.flush()
-    counter = Consolecounter("", "\nDone\n")
-    self.log.getlog(self.opts.user, self.opts.network, self.opts.channel, outfile, counter=counter, log=self.log, time=time, limit=100000)
-    outfile.close()

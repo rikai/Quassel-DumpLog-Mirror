@@ -14,7 +14,7 @@ import os
 import re
 
 class _conf:
-    dbpath=("~/.config/quassel-irc.org/quassel-storage.sqlite", "~/.quassel/quassel-storage.sqlite")
+    dbinfo=("dbname='quassel' user='quassel' host='localhost' password='somepassword' port='5432'")
 
 """
 Buffer Types
@@ -343,7 +343,7 @@ class Logutil:
 
     def cursor(self):
         """for thread safety, we need to do many connects for now"""
-        con = psycopg2.connect("dbname='quassel' user='quassel' host='localhost' password='somepassword' port='5433'")
+        con = psycopg2.connect(_conf.dbinfo)
         return con.cursor()
     
     def get_users(self):
@@ -410,6 +410,7 @@ class Logutil:
         fmt must be a Logformat child
         Specify a limit to run iterative if your querie is so large that you run out of memory
         """
+        limit1=10
         if not time:
             time = '01-Jan-1901 00:00:00'
         if limit == all:
